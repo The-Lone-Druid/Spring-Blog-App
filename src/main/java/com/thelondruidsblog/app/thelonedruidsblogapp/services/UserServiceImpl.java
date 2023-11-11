@@ -1,14 +1,18 @@
 package com.thelondruidsblog.app.thelonedruidsblogapp.services;
 
 import com.thelondruidsblog.app.thelonedruidsblogapp.entities.User;
+import com.thelondruidsblog.app.thelonedruidsblogapp.exceptions.DataIntegrityViolationException;
 import com.thelondruidsblog.app.thelonedruidsblogapp.exceptions.ResourceNotFoundException;
 import com.thelondruidsblog.app.thelonedruidsblogapp.payloads.UserDto;
 import com.thelondruidsblog.app.thelonedruidsblogapp.repositories.UserRepo;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -21,10 +25,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        User user = this.dtoToEntity(userDto);
+
+        if(getUserByEmail(userDto.getEmail()) != null) {
+            throw new DataIntegrityViolationException("User with email " + userDto.getEmail() + " already exists");
+        }
+
+        User user = this.modelMapper.map(userDto, User.class);
         User createdUser = this.userRepo.save(user);
 
-        return this.entityToDto(createdUser);
+        return this.modelMapper.map(createdUser, UserDto.class);
     }
 
     @Override
@@ -32,29 +41,39 @@ public class UserServiceImpl implements UserService {
         User user = this.userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
         user.setName(userDto.getName());
-        user.setEmail(userDto.getEmail());
-        user.setPassword(userDto.getPassword());
         user.setAbout(userDto.getAbout());
 
         User updatedUser = this.userRepo.save(user);
 
-        return this.entityToDto(updatedUser);
+        return this.modelMapper.map(updatedUser, UserDto.class);
     }
 
     @Override
     public UserDto getUserById(Integer userId) {
         User user = this.userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
-        return this.entityToDto(user);
+        return this.modelMapper.map(user, UserDto.class);
+    }
+
+    @Override
+    public UserDto getUserByEmail(String email) {
+        User newUser = new User();
+        newUser.setEmail(email);
+
+        User user = this.userRepo.findOne(Example.of(newUser)).orElse(null);
+
+        if(user != null) {
+            return this.modelMapper.map(user, UserDto.class);
+        }
+
+        return null;
     }
 
     @Override
     public List<UserDto> getAllUsers() {
         List<User> users = this.userRepo.findAll();
 
-        List<UserDto> userDtos = users.stream().map(this::entityToDto).toList();
-
-        return userDtos;
+        return users.stream().map(user -> this.modelMapper.map(user, UserDto.class)).collect(Collectors.toList());
     }
 
     @Override
@@ -63,14 +82,6 @@ public class UserServiceImpl implements UserService {
 
         this.userRepo.delete(user);
 
-        return this.entityToDto(user);
-    }
-
-    private User dtoToEntity(UserDto userDto) {
-        return this.modelMapper.map(userDto, User.class);
-    }
-
-    private UserDto entityToDto(User user) {
         return this.modelMapper.map(user, UserDto.class);
     }
 }
