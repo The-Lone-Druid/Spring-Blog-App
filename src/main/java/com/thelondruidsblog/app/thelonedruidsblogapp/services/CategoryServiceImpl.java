@@ -1,13 +1,11 @@
 package com.thelondruidsblog.app.thelonedruidsblogapp.services;
 
 import com.thelondruidsblog.app.thelonedruidsblogapp.entities.Category;
-import com.thelondruidsblog.app.thelonedruidsblogapp.exceptions.DataIntegrityViolationException;
 import com.thelondruidsblog.app.thelonedruidsblogapp.exceptions.ResourceNotFoundException;
 import com.thelondruidsblog.app.thelonedruidsblogapp.payloads.CategoryDto;
 import com.thelondruidsblog.app.thelonedruidsblogapp.repositories.CategoryRepo;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

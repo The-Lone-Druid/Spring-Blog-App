@@ -3,7 +3,6 @@ package com.thelondruidsblog.app.thelonedruidsblogapp.controllers;
 import com.thelondruidsblog.app.thelonedruidsblogapp.payloads.UserDto;
 import com.thelondruidsblog.app.thelonedruidsblogapp.services.UserService;
 import jakarta.validation.Valid;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
